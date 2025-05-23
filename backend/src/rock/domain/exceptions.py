@@ -1,0 +1,2 @@
+class RockDetectionTimeout(Exception):
+    pass

@@ -1,0 +1,96 @@
+services:
+  app:
+    build:
+      context: ./
+    container_name: rockappapi_app
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+    restart: always
+    networks:
+      global_network:
+      default:
+    volumes:
+      - app_localstorage:/app/storage
+      - ./logs/fastapi:/app/logs
+    ports:
+      - "8070:80"
+
+  parser:
+    build:
+      context: ./
+      dockerfile: ./parser.Dockerfile
+    environment:
+      API_URL: "http://app:80"
+    networks:
+      default:
+    volumes:
+      - parser_cache:/app/cache
+    restart: always
+
+  db:
+    image: postgres:latest
+    container_name: rockappapi_db
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./etc/postgresql/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    restart: always
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    networks:
+      default:
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis
+    container_name: rockappapi_redis
+    restart: always
+    env_file:
+      - .env
+    networks:
+      default:
+    ports:
+      - "6379:6379"
+
+  rqworker:
+    build:
+      context: ./
+      dockerfile: ./rq.Dockerfile
+    env_file:
+      - .env
+    container_name: rockappapi_rqworker
+    restart: always
+    networks:
+      default:
+    volumes:
+      - app_localstorage:/app/storage
+
+  elasticsearch:
+    image: elasticsearch:9.0.1
+    container_name: rockappapi_elasticsearch
+    environment:
+      discovery.type: "single-node"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+      ELASTIC_PASSWORD: password
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+networks:
+  global_network:
+    external: true
+
+volumes:
+  parser_cache:
+  postgres_data:
+  elasticsearch_data:
+  app_localstorage:
