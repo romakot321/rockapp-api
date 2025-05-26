@@ -37,6 +37,11 @@ async def get_detect_rock_status(detection_id: UUID, detection_uow: DetectionUoW
     return detection
 
 
+@router.get("/{rock_id}", response_model=Rock)
+async def get_rock(rock_id: UUID, rock_uow: RockUoWDepend):
+    return await GetRockUseCase(rock_uow).execute_with_pk(rock_id)
+
+
 @router.get("", response_model=Rock)
 async def search_rock(rock_uow: RockUoWDepend, name: str = Query()):
     return await GetRockUseCase(rock_uow).execute_with_name(name)
