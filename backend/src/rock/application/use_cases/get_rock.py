@@ -9,7 +9,7 @@ class GetRockUseCase:
 
     async def execute_with_name(self, rock_name: str) -> Rock:
         async with self.uow:
-            rock = await self.uow.rocks.search_by_name(rock_name)
+            rock = await self.uow.rocks.search_by_name(rock_name.lower())
         return rock
 
     async def execute_with_pk(self, rock_pk: UUID) -> Rock:

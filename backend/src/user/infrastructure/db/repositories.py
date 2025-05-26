@@ -10,7 +10,7 @@ from src.db.exceptions import ModelNotFoundException
 from src.db.exceptions import ModelConflictException
 from src.user.infrastructure.db.orm import UserDB
 from src.user.application.interfaces.user_repository import IUserRepository
-from src.user.domain.entities import User, UserCreate, UserUpdate
+from src.user.domain.entities import User, UserCreate, UserUpdate, UserRockDetection
 
 
 class PGUserRepository(IUserRepository):
@@ -52,5 +52,9 @@ class PGUserRepository(IUserRepository):
         return User(
             id=model.id,
             avatar=model.avatar,
-            rock_detections=model.successful_rock_detections
+            rock_detections=[
+                UserRockDetection(rock_id=i.rock_id)
+                for i in model.successful_rock_detections
+                if i.rock_id is not None
+            ]
         )

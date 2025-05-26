@@ -2,6 +2,7 @@ from src.rock.domain.entities import Rock
 from src.user.application.interfaces.user_uow import IUserUnitOfWork
 from src.user.domain.dtos import UserRockDTO
 from src.user.domain.entities import User
+from src.core.config import settings
 
 
 class ListUserRocksUseCase:
@@ -23,4 +24,4 @@ class ListUserRocksUseCase:
 
     @staticmethod
     def _rock_to_dto(rock: Rock) -> UserRockDTO:
-        return UserRockDTO(id=rock.id, name=rock.name, image_url=None)
+        return UserRockDTO(id=rock.id, name=rock.name, image_url=f"https://{settings.DOMAIN}/api/rock/{rock.id}/image")

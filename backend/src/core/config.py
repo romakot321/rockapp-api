@@ -4,6 +4,8 @@ import os
 
 
 class Settings(BaseSettings):
+    DOMAIN: str = "localhost"
+
     REDIS_HOST: str = "redis"
 
     ELASTICSEARCH_HOST: str = "elasticsearch"

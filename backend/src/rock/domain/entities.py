@@ -15,6 +15,7 @@ class DetectionStatus(str, Enum):
 class Detection(BaseModel):
     id: UUID
     status: DetectionStatus
+    details: str | None = None
     detector_result: str | None = None
     rock_id: UUID | None = None
 

@@ -20,7 +20,7 @@ class ElasticsearchResponse(BaseModel):
 
         total: Total
         hits: list[Hit]
-        max_score: float
+        max_score: float | None = None
 
     hits: Hits
     took: int

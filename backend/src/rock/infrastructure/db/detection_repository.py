@@ -47,5 +47,6 @@ class PGDetectionRepository(IDetectionRepository):
             id=model.id,
             status=DetectionStatus(model.status),
             detector_result=model.detector_result,
+            details=model.details,
             rock_id=model.rock_id
         )
