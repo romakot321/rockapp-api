@@ -1,6 +1,6 @@
 from typing import BinaryIO
 from uuid import UUID
-from backend.src.rock.application.interfaces.image_storage import IImageStorage
+from src.rock.application.interfaces.image_storage import IImageStorage
 
 
 class GetRockImageUseCase:

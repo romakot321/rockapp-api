@@ -15,8 +15,6 @@ services:
     volumes:
       - app_localstorage:/app/storage
       - ./logs/fastapi:/app/logs
-    ports:
-      - "8070:80"
 
   db:
     image: postgres:latest
@@ -34,8 +32,6 @@ services:
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     networks:
       default:
-    ports:
-      - "5432:5432"
 
   redis:
     image: redis
@@ -45,8 +41,6 @@ services:
       - .env
     networks:
       default:
-    ports:
-      - "6379:6379"
 
   rqworker:
     build:
@@ -62,15 +56,14 @@ services:
       - app_localstorage:/app/storage
 
   elasticsearch:
-    image: elasticsearch:9.0.1
+    image: elasticsearch:8.0.1
     container_name: rockappapi_elasticsearch
     environment:
       discovery.type: "single-node"
       ES_JAVA_OPTS: "-Xms512m -Xmx512m"
       ELASTIC_PASSWORD: password
-    ports:
-      - "9200:9200"
     volumes:
+      - ./etc/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - elasticsearch_data:/usr/share/elasticsearch/data
 
 networks:
