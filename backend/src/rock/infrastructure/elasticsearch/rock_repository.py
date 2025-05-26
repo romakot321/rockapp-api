@@ -27,6 +27,16 @@ class ESRockRepository(IRockRepository):
         )
         response = ElasticsearchResponse.model_validate(dict(response_raw))
         if response.hits.total.value == 0:
+            return await self._search_in_synonyms(name)
+        max_scored_hit = max(response.hits.hits, key=lambda i: i.score)
+        return Rock.model_validate(max_scored_hit.source)
+
+    async def _search_in_synonyms(self, name: str) -> Rock:
+        response_raw = await self.session.search(
+            index=self.INDEX_NAME, query={"bool": {"must": {"term": {"synonyms": name}}}}
+        )
+        response = ElasticsearchResponse.model_validate(dict(response_raw))
+        if response.hits.total.value == 0:
             raise ModelNotFoundException("elasticsearch.rock", name)
         max_scored_hit = max(response.hits.hits, key=lambda i: i.score)
         return Rock.model_validate(max_scored_hit.source)
