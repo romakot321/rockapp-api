@@ -43,6 +43,7 @@ class RunDetectRockUseCase:
             rock = await self.rock_uow.rocks.search_by_name(detector_result.lower())
             logger.debug(f"Detect run: detection {self.detection.id} rock founded: {rock}")
         except Exception as e:
+            logger.exception(e)
             return await self._set_detection_failed(str(e))
 
         return await self._store_search_result(rock)

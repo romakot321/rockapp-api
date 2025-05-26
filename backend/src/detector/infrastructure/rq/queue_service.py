@@ -24,6 +24,6 @@ class RQQueueService(IQueueService):
     def _to_domain(job: rq.job.Job) -> Job:
         return Job(
             id=job.id,
-            status=JobStatus(str(job.get_status())),
+            status=JobStatus(job.get_status().value),
             result=job.result
         )

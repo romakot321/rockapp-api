@@ -4,6 +4,8 @@ from uuid import UUID
 from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
 from src.db.exceptions import ModelNotFoundException
 from src.db.exceptions import ModelConflictException
 from src.user.infrastructure.db.orm import UserDB
@@ -22,7 +24,7 @@ class PGUserRepository(IUserRepository):
             raise ModelConflictException(UserDB.__tablename__, exc_args)
 
     async def get_by_pk(self, pk: str) -> User:
-        model = await self.session.get(UserDB, pk)
+        model = await self.session.get(UserDB, pk, options=[selectinload(UserDB.rock_detections)])
         if model is None:
             raise ModelNotFoundException(UserDB.__tablename__, pk)
         return self._to_domain(model)
@@ -33,7 +35,11 @@ class PGUserRepository(IUserRepository):
         self.session.add(model)
         await self._flush(user_data)
 
-        return self._to_domain(model)
+        return User(
+            id=model.id,
+            avatar=model.avatar,
+            rock_detections=[]
+        )
 
     async def update_by_pk(self, pk: str, user_data: UserUpdate) -> User:
         query = update(UserDB).filter_by(id=pk).values(**user_data.model_dump(exclude_unset=True))

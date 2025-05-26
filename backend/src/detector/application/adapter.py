@@ -9,7 +9,7 @@ from src.detector.application.use_cases.run_detect import RunDetectUseCase
 from src.rock.application.interfaces.detect_client import IDetectClient
 
 
-class GoogleDetectorAdapter[DetectionDTO](IDetectClient):
+class GoogleDetectorAdapter(IDetectClient):
     def __init__(self, queue_service: IQueueService, storage: IStorage) -> None:
         self.queue_service = queue_service
         self.storage = storage
