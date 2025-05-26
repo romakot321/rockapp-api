@@ -18,18 +18,6 @@ services:
     ports:
       - "8070:80"
 
-  parser:
-    build:
-      context: ./
-      dockerfile: ./parser.Dockerfile
-    environment:
-      API_URL: "http://app:80"
-    networks:
-      default:
-    volumes:
-      - parser_cache:/app/cache
-    restart: always
-
   db:
     image: postgres:latest
     container_name: rockappapi_db
@@ -86,6 +74,8 @@ services:
       - elasticsearch_data:/usr/share/elasticsearch/data
 
 networks:
+  default:
+    name: rockappapi_network
   global_network:
     external: true
 

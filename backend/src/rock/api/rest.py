@@ -1,14 +1,16 @@
 from io import BytesIO
 from uuid import UUID
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Header, Query, UploadFile
+from fastapi.responses import Response
 
+from backend.src.rock.application.use_cases.get_rock_image import GetRockImageUseCase
 from src.rock.application.use_cases.get_rock import GetRockUseCase
-from src.rock.api.dependencies import DetectClientDepend, DetectionUoWDepend, RockUoWDepend
+from src.rock.api.dependencies import DetectClientDepend, DetectionUoWDepend, ImageStorageDepend, RockUoWDepend
 from src.rock.application.use_cases.add_rock import AddRockUseCase
 from src.rock.application.use_cases.create_detect import CreateRockDetectUseCase
 from src.rock.application.use_cases.get_detect import GetRockDetectUseCase
 from src.rock.application.use_cases.run_detect import RunDetectRockUseCase
-from src.rock.domain.dtos import RockDetectionCreateDTO, RockDetectionReadDTO
+from src.rock.domain.dtos import RockDetectionCreateDTO, RockDetectionReadDTO, RockStoreDTO
 from src.rock.domain.entities import Rock
 
 router = APIRouter()
@@ -36,10 +38,16 @@ async def get_detect_rock_status(detection_id: UUID, detection_uow: DetectionUoW
 
 
 @router.get("", response_model=Rock)
-async def get_rock(rock_uow: RockUoWDepend, name: str = Query()):
+async def search_rock(rock_uow: RockUoWDepend, name: str = Query()):
     return await GetRockUseCase(rock_uow).execute_with_name(name)
 
 
 @router.post("", status_code=201, include_in_schema=False)
-async def add_rock(data: Rock, rock_uow: RockUoWDepend, rock_storage_token: str = Header()):
-    await AddRockUseCase(rock_uow, rock_storage_token).execute(data)
+async def add_rock(data: RockStoreDTO, rock_uow: RockUoWDepend, image_storage: ImageStorageDepend, rock_storage_token: str = Header()):
+    await AddRockUseCase(rock_uow, image_storage, rock_storage_token).execute(data)
+
+
+@router.get("/{rock_id}/image", response_class=Response)
+async def get_rock_image(rock_id: UUID, image_storage: ImageStorageDepend):
+    image = GetRockImageUseCase(image_storage).execute(rock_id)
+    return Response(content=image.read(), media_type="image/jpg")

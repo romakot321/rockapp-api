@@ -1,0 +1,16 @@
+services:
+  parser:
+    build:
+      context: ./
+      dockerfile: ./parser.Dockerfile
+    restart: always
+    container_name: rockappapi_parser
+    environment:
+      - "PYTHONUNBUFFERED=1"
+      - "API_URL=http://rockappapi_app:80"
+    networks:
+      default:
+
+networks:
+  default:
+    name: rockappapi_network

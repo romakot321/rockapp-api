@@ -11,7 +11,8 @@ class ESRockUnitOfWork(IRockUnitOfWork):
     async def __aenter__(self):
         self.session: AsyncElasticsearch = await self.session_factory()
         self.rocks = ESRockRepository(self.session)
-        return self
+        return await super().__aenter__()
 
-    async def __aexit__(self, *excinfo):
+    async def __aexit__(self, *args):
+        await super().__aexit__(*args)
         await self.session.close()

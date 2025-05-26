@@ -4,6 +4,7 @@ import aiohttp
 import pathlib
 from bs4 import BeautifulSoup
 from models import Rock
+from scraper import get_page
 import json
 
 base_url = "https://mindat.org"
@@ -18,10 +19,16 @@ def parse_mineral_page(html: str, page_id: int) -> Rock | None:
         return
 
     soup = BeautifulSoup(html, "html.parser")
+    data = {}
+
+    image_part = soup.find_all("div", {"class": "userbigpicture noborder"})
+    if image_part:
+        image = image_part[0].find("img")
+        if image and "src" in image.attrs:
+            data["image_url"] = base_url + "/" + str(image.attrs["src"]).lstrip("/")
 
     name_part = soup.find("h1", {"class": "mineralheading"})
     name = name_part.text.strip()
-    data = {}
 
     if page_id in rocks.keys():
         rock = rocks[page_id]
@@ -97,26 +104,16 @@ def parse_mineral_page(html: str, page_id: int) -> Rock | None:
     return Rock(**data)
 
 
-async def get_mineral_page(page_id: int) -> str:
+def get_mineral_page(page_id: int) -> str:
     if pathlib.Path(f"cache/min-{page_id}.html").exists():
         with open(f"cache/min-{page_id}.html", "r") as f:
             return f.read()
 
-    async with aiohttp.ClientSession(base_url=base_url) as session:
-        resp = await session.get(
-            f"min-{page_id}.html",
-            cookies={"guestid": "189726597", "mindat": "pu4uo62odo792elvh1ueo38gia"},
-            headers={
-                "Host": "www.mindat.org",
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
-            },
-        )
-        assert resp.status == 200, await resp.text()
+    content = get_page(base_url + f"/min-{page_id}.html")
 
-        content = await resp.text()
-        with open(f"cache/min-{page_id}.html", "w") as f:
-            f.write(content)
-        return content
+    with open(f"cache/min-{page_id}.html", "w") as f:
+        f.write(content)
+    return content
 
 
 async def send_rock(rock: Rock):
@@ -128,7 +125,9 @@ async def send_rock(rock: Rock):
 async def main():
     global rocks
     for page_id in range(1, 50):
-        page = await get_mineral_page(page_id)
+        print("Trying page " + str(page_id))
+        page = get_mineral_page(page_id)
+        print("Get page " + str(page_id))
         rock = parse_mineral_page(page, page_id)
         if rock is None:
             continue

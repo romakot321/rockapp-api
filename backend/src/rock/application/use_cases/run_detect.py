@@ -50,6 +50,7 @@ class RunDetectRockUseCase:
 
     async def _wait_for_detector_result(self) -> str:
         for _ in range(self.TIMEOUT_SECONDS):
+            await asyncio.sleep(1)
             result = await self.detect_client.get_detection(self.detection.id)
             if (stored := await self._store_detector_result(result)) is not None:
                 return stored.detector_result

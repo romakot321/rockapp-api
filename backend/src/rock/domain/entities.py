@@ -1,4 +1,5 @@
 from enum import Enum
+import string
 from typing import Literal
 from uuid import UUID
 from pydantic import BaseModel, Field
@@ -33,7 +34,7 @@ class DetectionUpdate(BaseModel):
 class Rock(BaseModel):
     id: UUID
     name: str
-    price: str
+    price: int
     rarity: int = Field(gt=0, description="В усл. единицах")
     danger: str
     type: str
@@ -52,3 +53,4 @@ class Rock(BaseModel):
     history: str
     synonyms: list[str]
     parent: str | None = None
+
