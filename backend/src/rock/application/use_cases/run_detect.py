@@ -40,13 +40,18 @@ class RunDetectRockUseCase:
             logger.debug(f"Detect run: detection {self.detection.id} created in client")
             detector_result = await self._wait_for_detector_result()
             logger.debug(f"Detect run: detection {self.detection.id} result: {detector_result}")
-            rock = await self.rock_uow.rocks.search_by_name(detector_result.lower())
+            rock = await self._search_for_rock(detector_result)
             logger.debug(f"Detect run: detection {self.detection.id} rock founded: {rock}")
         except Exception as e:
             logger.exception(e)
             return await self._set_detection_failed(str(e))
 
         return await self._store_search_result(rock)
+
+    async def _search_for_rock(self, rock_name: str) -> Rock:
+        async with self.rock_uow:
+            rock = await self.rock_uow.rocks.search_by_name(rock_name.lower())
+        return rock
 
     async def _set_detection_failed(self, details: str | None = None) -> Detection:
         async with self.uow:
@@ -65,7 +70,7 @@ class RunDetectRockUseCase:
     async def _store_search_result(self, result: Rock) -> Detection:
         async with self.uow:
             detection = await self.uow.detections.update_by_pk(
-                self.detection.id, DetectionUpdate(rock_id=result.id)
+                self.detection.id, DetectionUpdate(rock_id=result.id, status=DetectionStatus.finished)
             )
             await self.uow.commit()
         return detection

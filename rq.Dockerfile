@@ -78,6 +78,7 @@ ENV PATH=/app/bin:$PATH \
 
 COPY --chown=$user_id:$group_id proxychains.conf /etc/proxychains.conf
 COPY --link --chown=$user_id:$group_id --from=build /app/ /app
+COPY ./backend/google_credentials.json /app/google_credentials.json
 COPY ./backend/alembic /app/alembic
 COPY ./backend/alembic.ini /app
 COPY ./backend/src /app/src

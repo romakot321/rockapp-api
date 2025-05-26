@@ -143,5 +143,7 @@ cython_debug/
 
 # Pycharm
 .idea/
+
 images/
 logs/
+*.json
