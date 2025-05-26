@@ -1,3 +1,4 @@
+from loguru import logger
 from src.detector.application.interfaces.storage import IStorage
 from src.detector.domain.exceptions import DetectionError
 from src.detector.infrastructure.localstorage import LocalStorage
@@ -11,8 +12,10 @@ class RunDetectUseCase:
         self.storage = storage
 
     async def execute(self, image_filename: str) -> str:
+        logger.info("Started detection")
         image_content = self._get_image_content(image_filename)
         result = await self.client.execute(image_content)
+        logger.info(f"Detection finished: {result}")
         return result
 
     def _get_image_content(self, image_filename: str) -> bytes:

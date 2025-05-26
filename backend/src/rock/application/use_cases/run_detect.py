@@ -2,6 +2,8 @@ from typing import BinaryIO
 from uuid import UUID, uuid4
 import asyncio
 
+from loguru import logger
+
 from src.rock.application.interfaces.rock_uow import IRockUnitOfWork
 from src.rock.domain.mappers import GoogleDetectionToRockDetectionMapper
 from src.rock.application.interfaces.rock_repository import IRockRepository
@@ -35,8 +37,11 @@ class RunDetectRockUseCase:
     async def execute(self, image: BinaryIO) -> Detection:
         try:
             await self.detect_client.create_detection(self.detection.id, image)
+            logger.debug(f"Detect run: detection {self.detection.id} created in client")
             detector_result = await self._wait_for_detector_result()
+            logger.debug(f"Detect run: detection {self.detection.id} result: {detector_result}")
             rock = await self.rock_uow.rocks.search_by_name(detector_result.lower())
+            logger.debug(f"Detect run: detection {self.detection.id} rock founded: {rock}")
         except Exception as e:
             return await self._set_detection_failed(str(e))
 

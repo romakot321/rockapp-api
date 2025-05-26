@@ -1,4 +1,5 @@
 from typing import BinaryIO
+from loguru import logger
 from uuid import UUID
 from src.detector.domain.dtos import DetectionStatus, DetectionDTO
 from src.detector.domain.entities import Job
@@ -16,6 +17,7 @@ class GoogleDetectorAdapter[DetectionDTO](IDetectClient):
     async def create_detection(self, detection_id: UUID, image: BinaryIO) -> DetectionDTO:
         self.storage.store_file(str(detection_id), image)
         job = self.queue_service.enqueue_job(RunDetectUseCase.execute_google, str(detection_id), job_id=str(detection_id))
+        logger.info(f"Queued rock detection {detection_id}")
         return self._to_dto(job)
 
     async def get_detection(self, detection_id: UUID) -> DetectionDTO:

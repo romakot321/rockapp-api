@@ -1,3 +1,4 @@
+from loguru import logger
 from src.user.application.interfaces.user_uow import IUserUnitOfWork
 from src.user.domain.dtos import UserCreateDTO
 from src.user.domain.entities import User, UserCreate
@@ -12,4 +13,5 @@ class CreateUserUseCase:
         async with self.user_uow:
             model = await self.user_uow.user.create(command)
             await self.user_uow.commit()
+        logger.debug(f"Create user: created user {model.id}")
         return model

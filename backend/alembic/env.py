@@ -8,6 +8,7 @@ from alembic import context
 
 from src.db.base import Base
 from src.rock.infrastructure.db.orm import RockDetectionDB
+from src.user.infrastructure.db.orm import UserDB, UserRankDB
 from src.core.config import settings
 
 # this is the Alembic Config object, which provides
