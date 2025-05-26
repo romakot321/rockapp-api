@@ -4,7 +4,7 @@ import rq
 from src.detector.domain.entities import Job, JobStatus
 from src.detector.application.interfaces.queue_service import IQueueService
 from src.core.config import settings
-import redis.asyncio as redis
+import redis
 
 
 class RQQueueService(IQueueService):

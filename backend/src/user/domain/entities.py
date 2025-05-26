@@ -1,8 +1,9 @@
 from uuid import UUID
 from pydantic import BaseModel
+from enum import Enum
 
 
-class UserRank(BaseModel):
+class UserRank(str, Enum):
     rank_1 = "Lord of Stones"
     rank_2 = "Neophyte"
 

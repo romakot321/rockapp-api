@@ -8,7 +8,7 @@ from src.db.exceptions import ModelNotFoundException
 from src.db.exceptions import ModelConflictException
 from src.user.infrastructure.db.orm import UserDB
 from src.user.application.interfaces.user_repository import IUserRepository
-from src.user.domain.entities import User, UserCreate, UserStatus, UserUpdate
+from src.user.domain.entities import User, UserCreate, UserUpdate
 
 
 class PGUserRepository(IUserRepository):

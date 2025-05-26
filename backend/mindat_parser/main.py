@@ -9,6 +9,8 @@ import json
 
 base_url = "https://mindat.org"
 API_URL = os.getenv("API_URL", "http://localhost:8000")
+FROM_PAGE = int(os.getenv("FROM_PAGE", "0"))
+TO_PAGE = int(os.getenv("TO_PAGE", 55000))
 rocks = {}
 
 
@@ -118,13 +120,20 @@ def get_mineral_page(page_id: int) -> str:
 
 async def send_rock(rock: Rock):
     async with aiohttp.ClientSession(base_url=API_URL) as session:
-        resp = await session.post("/api/rock", json=rock.model_dump(mode="json"), headers={"rock-storage-token": "iloverocks"})
-        assert resp.status == 201, await resp.text()
+        while True:
+            try:
+                resp = await session.post("/api/rock", json=rock.model_dump(mode="json"), headers={"rock-storage-token": "iloverocks"})
+            except Exception as e:
+                print(e)
+                continue
+            if resp.status == 201:
+                break
+            print(await resp.text())
 
 
 async def main():
     global rocks
-    for page_id in range(1, 50):
+    for page_id in range(FROM_PAGE, TO_PAGE):
         print("Trying page " + str(page_id))
         page = get_mineral_page(page_id)
         print("Get page " + str(page_id))

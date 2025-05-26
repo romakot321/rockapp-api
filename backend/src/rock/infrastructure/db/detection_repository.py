@@ -18,8 +18,8 @@ class PGDetectionRepository(IDetectionRepository):
     async def _flush(self, exc_args: Any):
         try:
             await self.session.flush()
-        except IntegrityError:
-            raise ModelConflictException(RockDetectionDB.__tablename__, exc_args)
+        except IntegrityError as e:
+            raise ModelConflictException(RockDetectionDB.__tablename__, (e, exc_args))
 
     async def get_by_pk(self, pk: UUID) -> Detection:
         model = await self.session.get(RockDetectionDB, pk)

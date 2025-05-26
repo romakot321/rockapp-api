@@ -1,7 +1,7 @@
 from uuid import UUID
 from sqlalchemy import ForeignKey, LargeBinary, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.util import hybridproperty
+from sqlalchemy.ext.hybrid import hybrid_property
 from src.db.base import Base, BaseMixin
 
 
@@ -21,14 +21,14 @@ class UserDB(BaseMixin, Base):
     avatar: Mapped[bytes | None] = mapped_column(type_=LargeBinary, nullable=True)
     favorite_rock: Mapped[UUID | None] = mapped_column(ForeignKey("rocks.id", ondelete="SET NULL"))
 
-    rock_detections: Mapped[list['RockDetectionDB']] = relationship(lazy="selectin", back_populates="user")
+    # rock_detections: Mapped[list['RockDetectionDB']] = relationship(lazy="selectin", back_populates="user")
 
-    @hybridproperty
-    def successful_rock_detections(self):
-        return [detection for detection in self.rock_detections if detection.status == "finished"]
-
-    @successful_rock_detections.expression
-    @classmethod
-    def successful_rock_detections(cls):
-        return select(cls.rock_detections).filter_by(status="finished")
+#    @hybrid_property
+#    def successful_rock_detections(self):
+#        return [detection for detection in self.rock_detections if detection.status == "finished"]
+#
+#    @successful_rock_detections.expression
+#    @classmethod
+#    def successful_rock_detections(cls):
+#        return select(cls.rock_detections).filter_by(status="finished")
 

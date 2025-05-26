@@ -8,9 +8,15 @@ services:
     environment:
       - "PYTHONUNBUFFERED=1"
       - "API_URL=http://rockappapi_app:80"
+      - "FROM_PAGE=49"
     networks:
       default:
+    volumes:
+      - rockappapi_parser_cache:/usr/src/app/cache
 
 networks:
   default:
     name: rockappapi_network
+
+volumes:
+  rockappapi_parser_cache:

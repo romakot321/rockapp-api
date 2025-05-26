@@ -15,6 +15,6 @@ class CreateRockDetectUseCase:
             try:
                 detection = await self.uow.detections.create(request)
             except ModelConflictException as e:
-                raise HTTPException(409, detail="Conflict on detection create")
+                raise HTTPException(409, detail="Conflict on detection create: " + str(e))
             await self.uow.commit()
         return detection
