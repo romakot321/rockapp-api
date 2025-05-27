@@ -23,7 +23,8 @@ def upgrade() -> None:
     op.create_table('user_ranks',
     sa.Column('rocks_cost', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(), nullable=False),
-    sa.PrimaryKeyConstraint('title', name=op.f('user_ranks_pkey'))
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.PrimaryKeyConstraint('id', name=op.f('user_ranks_pkey'))
     )
     op.create_table('users',
     sa.Column('id', sa.String(), nullable=False),
