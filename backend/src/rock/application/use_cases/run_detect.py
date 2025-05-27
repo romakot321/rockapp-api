@@ -1,11 +1,11 @@
-from typing import BinaryIO
+from typing import Any, BinaryIO, Generic
 from uuid import UUID, uuid4
 import asyncio
 
 from loguru import logger
 
 from src.rock.application.interfaces.rock_uow import IRockUnitOfWork
-from src.rock.domain.mappers import GoogleDetectionToRockDetectionMapper
+from src.rock.domain.mappers import DetectionResultToRockDetectionMapper
 from src.rock.application.interfaces.rock_repository import IRockRepository
 from src.rock.domain.exceptions import RockDetectionTimeout
 from src.rock.application.interfaces.detection_uow import IDetectionUnitOfWork
@@ -16,15 +16,15 @@ from src.rock.domain.entities import (
     DetectionUpdate,
     Rock,
 )
-from src.rock.application.interfaces.detect_client import IDetectClient, TDetection
+from src.rock.application.interfaces.detect_client import IDetectClient, TAdditional, TDetection
 
 
-class RunDetectRockUseCase:
+class RunDetectRockUseCase(Generic[TDetection, TAdditional]):
     TIMEOUT_SECONDS = 30
 
     def __init__(
         self,
-        detect_client: IDetectClient,
+        detect_client: IDetectClient[TDetection, TAdditional],
         uow: IDetectionUnitOfWork,
         detection: Detection,
         rock_uow: IRockUnitOfWork,
@@ -35,8 +35,9 @@ class RunDetectRockUseCase:
         self.rock_uow = rock_uow
 
     async def execute(self, image: BinaryIO) -> Detection:
+        additional_data = self._get_additional_data()
         try:
-            await self.detect_client.create_detection(self.detection.id, image)
+            await self.detect_client.create_detection(self.detection.id, image, additional_data)
             logger.debug(f"Detect run: detection {self.detection.id} created in client")
             detector_result = await self._wait_for_detector_result()
             logger.debug(f"Detect run: detection {self.detection.id} result: {detector_result}")
@@ -48,9 +49,14 @@ class RunDetectRockUseCase:
 
         return await self._store_search_result(rock)
 
-    async def _search_for_rock(self, rock_name: str) -> Rock:
+    async def _get_additional_data(self) -> TAdditional:
+        return self.detection.detector_result
+
+    async def _search_for_rock(self, search_data: Any) -> Rock:
+        if not isinstance(search_data, str):
+            return search_data
         async with self.rock_uow:
-            rock = await self.rock_uow.rocks.search_by_name(rock_name.lower())
+            rock = await self.rock_uow.rocks.search_by_name(search_data.lower())
         return rock
 
     async def _set_detection_failed(self, details: str | None = None) -> Detection:
@@ -76,7 +82,7 @@ class RunDetectRockUseCase:
         return detection
 
     async def _store_detector_result(self, result: TDetection) -> Detection | None:
-        domain_result = GoogleDetectionToRockDetectionMapper().map_one(result)
+        domain_result = DetectionResultToRockDetectionMapper().map_one(result)
         if (
             domain_result.status != DetectionStatus.finished
             or domain_result.detector_result is None

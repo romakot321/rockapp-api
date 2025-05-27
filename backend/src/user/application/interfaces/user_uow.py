@@ -1,11 +1,13 @@
 import abc
 
+from backend.src.user.application.interfaces.user_rank_repository import IUserRankRepository
 from src.rock.application.interfaces.rock_repository import IRockRepository
 from src.user.application.interfaces.user_repository import IUserRepository
 
 
 class IUserUnitOfWork(abc.ABC):
     user: IUserRepository
+    user_rank: IUserRankRepository
     rock: IRockRepository
 
     async def commit(self):

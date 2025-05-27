@@ -8,7 +8,7 @@ from src.db.base import Base, BaseMixin
 class UserRankDB(Base):
     __tablename__ = "user_ranks"
 
-    rocks_cost: Mapped[int]
+    rocks_count: Mapped[int]
     title: Mapped[str] = mapped_column(primary_key=True)
 
 

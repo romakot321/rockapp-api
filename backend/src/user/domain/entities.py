@@ -3,9 +3,14 @@ from pydantic import BaseModel
 from enum import Enum
 
 
-class UserRank(str, Enum):
+class UserRanks(str, Enum):
     rank_1 = "Lord of Stones"
     rank_2 = "Neophyte"
+
+
+class UserRank(BaseModel):
+    title: str
+    next_rocks_count: int
 
 
 class UserRockDetection(BaseModel):

@@ -1,32 +1,7 @@
-from uuid import UUID
-from fastapi import Form
-from pydantic import BaseModel, Field
-
-from src.rock.domain.entities import DetectionStatus
+from pydantic import BaseModel
 
 
-class RockDetectionReadDTO(BaseModel):
-    id: UUID
-    status: DetectionStatus
-    detector_result: str | None = None
-    rock_id: UUID | None = None
-
-
-class RockDetectionCreateDTO(BaseModel):
-    user_id: str
-    app_bundle: str
-
-    @classmethod
-    def as_form(cls, user_id: str = Form(), app_bundle: str = Form()):
-        return cls(
-            user_id=user_id,
-            app_bundle=app_bundle
-        )
-
-
-class RockStoreDTO(BaseModel):
-    id: UUID
-    image_url: str | None = None
+class OpenAIDetectionResponse(BaseModel):
     name: str
     price: int
     rarity: int = Field(gt=0, description="В усл. единицах")
@@ -45,6 +20,3 @@ class RockStoreDTO(BaseModel):
     chemical_group: str
     description: str
     history: str
-    synonyms: list[str]
-    parent: str | None = None
-

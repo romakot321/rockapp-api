@@ -11,7 +11,7 @@ class GetUserUseCase:
         async with self.user_uow:
             user = await self.user_uow.user.get_by_pk(pk)
             rocks_total_cost = await self._calculate_rocks_cost(user)
-            rank = await self._calculate_user_rank(user, rocks_total_cost)
+            rank = await self._calculate_user_rank(len(user.rock_detections))
         return UserReadDTO(
             id=user.id,
             rank=rank,
@@ -20,8 +20,8 @@ class GetUserUseCase:
             favorite_rock_id=user.favorite_rock_id
         )
 
-    async def _calculate_user_rank(self, user: User, rocks_total_cost: int) -> UserRank:
-        return UserRank.rank_1
+    async def _calculate_user_rank(self, rocks_count: int) -> UserRank:
+        return await self.user_uow.user_rank.calculate_rank(rocks_count)
 
     async def _calculate_rocks_cost(self, user: User) -> int:
         total = 0

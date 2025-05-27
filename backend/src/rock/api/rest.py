@@ -3,14 +3,25 @@ from uuid import UUID
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Header, Query, UploadFile
 from fastapi.responses import Response
 
+from backend.src.rock.application.use_cases.rerun_detect import RerunRockDetectUseCase
 from src.rock.application.use_cases.get_rock_image import GetRockImageUseCase
 from src.rock.application.use_cases.get_rock import GetRockUseCase
-from src.rock.api.dependencies import DetectClientDepend, DetectionUoWDepend, ImageStorageDepend, RockUoWDepend
+from src.rock.api.dependencies import (
+    DetectClientDepend,
+    DetectionUoWDepend,
+    ImageStorageDepend,
+    DetectGuessClientDepend,
+    RockUoWDepend,
+)
 from src.rock.application.use_cases.add_rock import AddRockUseCase
 from src.rock.application.use_cases.create_detect import CreateRockDetectUseCase
 from src.rock.application.use_cases.get_detect import GetRockDetectUseCase
 from src.rock.application.use_cases.run_detect import RunDetectRockUseCase
-from src.rock.domain.dtos import RockDetectionCreateDTO, RockDetectionReadDTO, RockStoreDTO
+from src.rock.domain.dtos import (
+    RockDetectionCreateDTO,
+    RockDetectionReadDTO,
+    RockStoreDTO,
+)
 from src.rock.domain.entities import Rock
 
 router = APIRouter()
@@ -18,14 +29,30 @@ router = APIRouter()
 
 @router.post("/detect", response_model=RockDetectionReadDTO)
 async def detect_rock(
-        detection_uow: DetectionUoWDepend,
-        rock_uow: RockUoWDepend,
-        detect_client: DetectClientDepend,
-        background_tasks: BackgroundTasks,
-        image: UploadFile = File(),
-        detect_data: RockDetectionCreateDTO = Depends(RockDetectionCreateDTO.as_form),
+    detection_uow: DetectionUoWDepend,
+    rock_uow: RockUoWDepend,
+    detect_client: DetectClientDepend,
+    background_tasks: BackgroundTasks,
+    image: UploadFile = File(),
+    detect_data: RockDetectionCreateDTO = Depends(RockDetectionCreateDTO.as_form),
 ):
     detection = await CreateRockDetectUseCase(detection_uow).execute(detect_data)
+    run_uc = RunDetectRockUseCase(detect_client, detection_uow, detection, rock_uow)
+    background_tasks.add_task(run_uc.execute, BytesIO(await image.read()))
+    return detection
+
+
+@router.post("/detect/{detection_id}/guess", response_model=RockDetectionReadDTO)
+async def guess_rock(
+    detection_id: UUID,
+    detection_uow: DetectionUoWDepend,
+    rock_uow: RockUoWDepend,
+    detect_client: DetectGuessClientDepend,
+    background_tasks: BackgroundTasks,
+    image: UploadFile = File(),
+):
+    """Detect rock with OpenAI gpt-4o model. Makes mistakes"""
+    detection = await RerunRockDetectUseCase(detection_uow).execute(detection_id)
     run_uc = RunDetectRockUseCase(detect_client, detection_uow, detection, rock_uow)
     background_tasks.add_task(run_uc.execute, BytesIO(await image.read()))
     return detection
@@ -48,7 +75,12 @@ async def search_rock(rock_uow: RockUoWDepend, name: str = Query()):
 
 
 @router.post("", status_code=201, include_in_schema=False)
-async def add_rock(data: RockStoreDTO, rock_uow: RockUoWDepend, image_storage: ImageStorageDepend, rock_storage_token: str = Header()):
+async def add_rock(
+    data: RockStoreDTO,
+    rock_uow: RockUoWDepend,
+    image_storage: ImageStorageDepend,
+    rock_storage_token: str = Header(),
+):
     await AddRockUseCase(rock_uow, image_storage, rock_storage_token).execute(data)
 
 

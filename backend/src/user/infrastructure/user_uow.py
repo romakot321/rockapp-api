@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.db.engine import async_session_maker
+from backend.src.user.infrastructure.db.user_rank_repository import PGUserRankRepository
 from src.rock.infrastructure.elasticsearch.dependencies import get_elasticsearch_rock_repository
-from src.user.infrastructure.db.repositories import PGUserRepository
+from src.user.infrastructure.db.user_repository import PGUserRepository
 from src.user.application.interfaces.user_uow import IUserUnitOfWork
 
 
@@ -19,6 +20,7 @@ class UserUnitOfWork(IUserUnitOfWork):
     async def __aenter__(self):
         self.session: AsyncSession = self.session_factory()
         self.rock = await anext(self.rock_repository_factory)
+        self.user_rank = PGUserRankRepository(self.session)
         self.user = PGUserRepository(self.session)
         return await super().__aenter__()
 
