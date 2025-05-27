@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.src.user.application.interfaces.user_rank_repository import IUserRankRepository
-from backend.src.user.domain.entities import UserRank
-from backend.src.user.infrastructure.db.orm import UserRankDB
+from src.user.application.interfaces.user_rank_repository import IUserRankRepository
+from src.user.domain.entities import UserRank
+from src.user.infrastructure.db.orm import UserRankDB
 
 
 class PGUserRankRepository(IUserRankRepository):

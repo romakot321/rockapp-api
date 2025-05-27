@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Header, Query, UploadFile
 from fastapi.responses import Response
 
-from backend.src.rock.application.use_cases.rerun_detect import RerunRockDetectUseCase
+from src.rock.application.use_cases.rerun_detect import RerunRockDetectUseCase
 from src.rock.application.use_cases.get_rock_image import GetRockImageUseCase
 from src.rock.application.use_cases.get_rock import GetRockUseCase
 from src.rock.api.dependencies import (

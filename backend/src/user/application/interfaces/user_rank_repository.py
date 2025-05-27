@@ -1,6 +1,6 @@
 import abc
 
-from backend.src.user.domain.entities import UserRank
+from src.user.domain.entities import UserRank
 
 
 class IUserRankRepository(abc.ABC):

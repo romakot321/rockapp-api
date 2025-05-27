@@ -20,7 +20,7 @@ class RerunRockDetectUseCase:
 
     async def _check_can_rerun(self, pk: UUID):
         detection = await self.detection_uow.detections.get_by_pk(pk)
-        if detection.status not in (DetectionStatus.queued, DetectionStatus.started):
+        if detection.status in (DetectionStatus.queued, DetectionStatus.started):
             raise HTTPException(400, detail="Detection cannot be rerunned: Previous run not finished yet")
         elif detection.detector_result is None:
             raise HTTPException(400, detail="Detection cannot be rerunned: Previous run did not produce results")

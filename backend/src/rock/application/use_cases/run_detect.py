@@ -7,7 +7,7 @@ from loguru import logger
 from src.rock.application.interfaces.rock_uow import IRockUnitOfWork
 from src.rock.domain.mappers import DetectionResultToRockDetectionMapper
 from src.rock.application.interfaces.rock_repository import IRockRepository
-from src.rock.domain.exceptions import RockDetectionTimeout
+from src.rock.domain.exceptions import RockDetectionTimeout, ResultMapError
 from src.rock.application.interfaces.detection_uow import IDetectionUnitOfWork
 from src.rock.domain.entities import (
     Detection,
@@ -49,11 +49,11 @@ class RunDetectRockUseCase(Generic[TDetection, TAdditional]):
 
         return await self._store_search_result(rock)
 
-    async def _get_additional_data(self) -> TAdditional:
+    def _get_additional_data(self) -> TAdditional:
         return self.detection.detector_result
 
-    async def _search_for_rock(self, search_data: Any) -> Rock:
-        if not isinstance(search_data, str):
+    async def _search_for_rock(self, search_data: str) -> Rock | str:
+        if "{" in search_data and "}" in search_data:
             return search_data
         async with self.rock_uow:
             rock = await self.rock_uow.rocks.search_by_name(search_data.lower())
@@ -73,7 +73,9 @@ class RunDetectRockUseCase(Generic[TDetection, TAdditional]):
                 return stored.detector_result
         raise RockDetectionTimeout()
 
-    async def _store_search_result(self, result: Rock) -> Detection:
+    async def _store_search_result(self, result: Rock | str) -> Detection:
+        if isinstance(result, str):
+            return self.detection
         async with self.uow:
             detection = await self.uow.detections.update_by_pk(
                 self.detection.id, DetectionUpdate(rock_id=result.id, status=DetectionStatus.finished)
@@ -82,7 +84,10 @@ class RunDetectRockUseCase(Generic[TDetection, TAdditional]):
         return detection
 
     async def _store_detector_result(self, result: TDetection) -> Detection | None:
-        domain_result = DetectionResultToRockDetectionMapper().map_one(result)
+        try:
+            domain_result = DetectionResultToRockDetectionMapper().map_one(result)
+        except ResultMapError:
+            return
         if (
             domain_result.status != DetectionStatus.finished
             or domain_result.detector_result is None
@@ -91,9 +96,9 @@ class RunDetectRockUseCase(Generic[TDetection, TAdditional]):
 
         detection_data = DetectionUpdate(detector_result=domain_result.detector_result)
         async with self.uow:
-            detection = await self.uow.detections.update_by_pk(
+            self.detection = await self.uow.detections.update_by_pk(
                 self.detection.id, detection_data
             )
             await self.uow.commit()
 
-        return detection
+        return self.detection

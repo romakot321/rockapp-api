@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from backend.src.user.application.interfaces.user_uow import IUserUnitOfWork
+from src.user.application.interfaces.user_uow import IUserUnitOfWork
 
 
 class GetUserAvatarUseCase:

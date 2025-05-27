@@ -1,10 +1,11 @@
 from io import BytesIO
+from loguru import logger
 import base64
 
 from loguru import logger
 from pydantic import ValidationError
-from backend.src.detector.domain.exceptions import DetectionError
-from backend.src.detector.infrastructure.openai.responses import OpenAIDetectionResponse
+from src.detector.domain.exceptions import DetectionError
+from src.detector.infrastructure.openai.responses import OpenAIDetectionResponse
 from src.detector.application.interfaces.client import (
     IDetectorClient,
     TAdditional,
@@ -36,11 +37,12 @@ class OpenAIDetector[TResult: str, TAdditional: str | None](
             top_p=1,
             store=True,
         )
-        if not response.choices:
+        logger.debug(response)
+        if not response.output or not response.output[0].content:
             raise DetectionError("Fail to execute OpenAI detector: Empty response")
         try:
             result = OpenAIDetectionResponse.model_validate_json(
-                response.choices[0].message.content
+                response.output[0].content[0].text
             )
         except ValidationError as e:
             logger.exception(e)
@@ -65,16 +67,13 @@ class OpenAIDetector[TResult: str, TAdditional: str | None](
             "role": "user",
             "content": [
                 {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": "data:image/jpeg;base64,"
-                        + base64.b64encode(image_content).decode()
-                    },
+                    "type": "input_image",
+                    "image_url": "data:image/jpeg;base64," + base64.b64encode(image_content).decode(),
                 }
             ],
         }
         if additional_data is not None:
-            user_input["content"].append({"type": "text", "text": additional_data})
+            user_input["content"].append({"type": "input_text", "text": additional_data})
         return user_input
 
     @staticmethod

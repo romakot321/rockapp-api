@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Any
-from backend.src.detector.domain.exceptions import DetectionError
+from src.rock.domain.exceptions import ResultMapError
 from src.rock.domain.entities import Detection as RockDetection, DetectionStatus as RockDetectionStatus
 from src.detector.domain.dtos import DetectionDTO as DetectionResult
 
@@ -22,7 +22,7 @@ class DetectionResultToRockDetectionMapper:
         elif self.source == DetectionResultSource.openai:
             return self._map_openai(model)
 
-        raise DetectionError("Failed to map detection result: Undefined result source")
+        raise ResultMapError("Failed to map detection result: Undefined result source")
 
     def _map_openai(self, model: DetectionResult) -> RockDetection:
         return RockDetection(

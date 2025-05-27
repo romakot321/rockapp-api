@@ -34,8 +34,8 @@ async def update_user_avatar(user_id: str, user_uow: UserUoWDepend, file: Upload
     await SetUserAvatarUseCase(user_uow).execute(user_id, await file.read())
 
 
-@router.get("/{user_id}/avatar", response_model=Response)
-async def get_user_avatar(user_id: str, user_uow: UserUoWDepend, file: UploadFile = File()):
+@router.get("/{user_id}/avatar", response_class=Response)
+async def get_user_avatar(user_id: str, user_uow: UserUoWDepend):
     avatar = await GetUserAvatarUseCase(user_uow).execute(user_id)
     return Response(content=avatar, media_type="image/jpg")
 

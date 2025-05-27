@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.db.engine import async_session_maker
-from backend.src.user.infrastructure.db.user_rank_repository import PGUserRankRepository
+from src.user.infrastructure.db.user_rank_repository import PGUserRankRepository
 from src.rock.infrastructure.elasticsearch.dependencies import get_elasticsearch_rock_repository
 from src.user.infrastructure.db.user_repository import PGUserRepository
 from src.user.application.interfaces.user_uow import IUserUnitOfWork

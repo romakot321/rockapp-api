@@ -1,7 +1,7 @@
 from fastapi import Depends
 from typing import Annotated
 
-from backend.src.detector.application.openai_adapter import OpenAIDetectorAdapter
+from src.detector.application.openai_adapter import OpenAIDetectorAdapter
 from src.detector.application.google_adapter import GoogleDetectorAdapter
 from src.detector.infrastructure.localstorage import LocalStorage
 from src.detector.infrastructure.rq.queue_service import RQQueueService
