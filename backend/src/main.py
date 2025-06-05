@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from sqladmin import Admin
 
+import src.core.logging_setup
+
 from src.db.engine import engine
 from src.rock.api.rest import router as rock_router
 from src.rock.api.admin import RockDetectionAdmin

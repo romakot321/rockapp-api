@@ -137,7 +137,11 @@ async def main():
         print("Trying page " + str(page_id))
         page = get_mineral_page(page_id)
         print("Get page " + str(page_id))
-        rock = parse_mineral_page(page, page_id)
+        try:
+            rock = parse_mineral_page(page, page_id)
+        except Exception as e:
+            print(f"ERROR ON PAGE {page_id}", str(e))
+            continue
         if rock is None:
             continue
         for synonym_id in rock.synonyms:
