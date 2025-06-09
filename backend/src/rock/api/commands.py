@@ -7,10 +7,10 @@ from src.rock.infrastructure.elasticsearch.unit_of_work import ESRockUnitOfWork
 
 async def _fill_rocks_data():
     openai_client = OpenAIClient()
-    async with ESRockUnitOfWork() as rock_uow:
-        logger.info("Starting fill rocks data")
-        await FillUnfilledDataUseCase(openai_client, rock_uow).execute()
-        logger.info("Finished fill rocks data")
+    rock_uow = ESRockUnitOfWork()
+    logger.info("Starting fill rocks data")
+    await FillUnfilledDataUseCase(openai_client, rock_uow).execute()
+    logger.info("Finished fill rocks data")
 
 
 def fill_rocks_data():
