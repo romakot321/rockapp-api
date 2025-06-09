@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from loguru import logger
 from src.rock.application.interfaces.image_storage import IImageStorage
 from src.rock.domain.dtos import RockStoreDTO
 from src.rock.application.interfaces.rock_uow import IRockUnitOfWork
@@ -23,4 +24,7 @@ class AddRockUseCase:
         async with self.uow:
             await self.uow.rocks.create(rock)
         if data.image_url:
-            await self.image_storage.transfer_image(data.image_url, str(data.id))
+            try:
+                await self.image_storage.transfer_image(data.image_url, str(data.id))
+            except Exception as e:
+                logger.warning(f"Failed to load rock image for {rock.id}: {str(e)}")

@@ -1,5 +1,6 @@
 from typing import AsyncGenerator, Iterator
 from uuid import UUID
+from loguru import logger
 from src.db.exceptions import ModelNotFoundException
 from src.rock.application.interfaces.rock_repository import IRockRepository
 from src.rock.domain.entities import Rock
