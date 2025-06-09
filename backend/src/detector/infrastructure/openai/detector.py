@@ -14,15 +14,11 @@ from src.detector.application.interfaces.client import (
 from openai import AsyncOpenAI
 
 
-class OpenAIDetector[TResult: str, TAdditional: str | None](
-    IDetectorClient
-):
+class OpenAIDetector[TResult: str, TAdditional: str | None](IDetectorClient):
     def __init__(self) -> None:
         self.client = AsyncOpenAI()
 
-    async def execute(
-        self, image_content: bytes, additional_data: str | None
-    ) -> str:
+    async def execute(self, image_content: bytes, additional_data: str | None) -> str:
         image_buffer = BytesIO(image_content)
         image_buffer.name = "tmp.png"
         response = await self.client.responses.create(
@@ -37,7 +33,6 @@ class OpenAIDetector[TResult: str, TAdditional: str | None](
             top_p=1,
             store=True,
         )
-        logger.debug(response)
         if not response.output or not response.output[0].content:
             raise DetectionError("Fail to execute OpenAI detector: Empty response")
         try:
@@ -68,12 +63,15 @@ class OpenAIDetector[TResult: str, TAdditional: str | None](
             "content": [
                 {
                     "type": "input_image",
-                    "image_url": "data:image/jpeg;base64," + base64.b64encode(image_content).decode(),
+                    "image_url": "data:image/jpeg;base64,"
+                    + base64.b64encode(image_content).decode(),
                 }
             ],
         }
         if additional_data is not None:
-            user_input["content"].append({"type": "input_text", "text": additional_data})
+            user_input["content"].append(
+                {"type": "input_text", "text": additional_data}
+            )
         return user_input
 
     @staticmethod
