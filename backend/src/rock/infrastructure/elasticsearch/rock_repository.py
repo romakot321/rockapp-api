@@ -1,4 +1,5 @@
 from uuid import UUID
+from loguru import logger
 from src.db.exceptions import ModelNotFoundException
 from src.rock.application.interfaces.rock_repository import IRockRepository
 from src.rock.domain.entities import Rock
@@ -42,6 +43,7 @@ class ESRockRepository(IRockRepository):
         return Rock.model_validate(max_scored_hit.source)
 
     async def create(self, rock_data: Rock) -> None:
+        logger.debug(rock_data)
         await self.session.index(
             index=self.INDEX_NAME, id=str(rock_data.id), document=rock_data.model_dump()
         )

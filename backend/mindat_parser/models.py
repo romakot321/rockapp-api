@@ -25,7 +25,7 @@ class Rock(BaseModel):
     description: str = ""
     history: str = ""
     synonyms: list[str] = []
-    parent: str | None = Field(validation_alias="synonym of", default=None)
+    parent: str | None = Field(default=None)
 
     @field_validator("parent", mode="before")
     @classmethod

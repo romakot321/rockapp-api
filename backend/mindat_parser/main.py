@@ -11,6 +11,7 @@ base_url = "https://mindat.org"
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 FROM_PAGE = int(os.getenv("FROM_PAGE", "0"))
 TO_PAGE = int(os.getenv("TO_PAGE", 55000))
+WORKERS_COUNT = 20
 rocks = {}
 
 
@@ -43,6 +44,12 @@ def parse_mineral_page(html: str, page_id: int) -> Rock | None:
         for synonym in synonyms_table.find_all("a"):
             synonyms.append(synonym.text)
     data["synonyms"] = synonyms
+
+    parent_part = soup.find_all("div", {"id": "mhenttype"})
+    if parent_part:
+        parent_name_part = parent_part[0].find("a")
+        if parent_name_part:
+            data["parent"] = parent_name_part.text
 
     about = {}
     phys_prop = {}
@@ -128,14 +135,30 @@ async def send_rock(rock: Rock):
                 continue
             if resp.status == 201:
                 break
-            print(await resp.text())
+    print(f"Sended {rock.name}")
 
 
-async def main():
-    global rocks
-    for page_id in range(FROM_PAGE, TO_PAGE):
-        print("Trying page " + str(page_id))
+async def get_page(page_id) -> str | None:
+    i = 0
+    while True:
         page = get_mineral_page(page_id)
+        if "Just a moment..." not in page:
+            break
+        await asyncio.sleep(5)
+        i += 1
+        if i >= 5:
+            return None
+    return page
+
+
+async def run(from_page, to_page):
+    global rocks
+    for page_id in range(from_page, to_page):
+        print("Trying page " + str(page_id))
+        page = await get_page(page_id)
+        if page is None:
+            print(f"Failed to get page {page_id}")
+            continue
         print("Get page " + str(page_id))
         try:
             rock = parse_mineral_page(page, page_id)
@@ -149,7 +172,16 @@ async def main():
         rocks[page_id] = rock
         print(rock)
         await send_rock(rock)
-        await asyncio.sleep(3)
+        await asyncio.sleep(1)
+
+
+async def main():
+    page_step = (TO_PAGE - FROM_PAGE) // WORKERS_COUNT
+    tasks = []
+    for from_page in range(FROM_PAGE, TO_PAGE, page_step):
+        tasks.append(asyncio.create_task(run(from_page, from_page + page_step)))
+    await asyncio.gather(*tasks)
+    print("Instance finished")
 
 
 asyncio.run(main())
