@@ -1,4 +1,5 @@
 from uuid import UUID
+import asyncio
 
 from loguru import logger
 from src.detector.infrastructure.openai.client import OpenAIClient
@@ -14,11 +15,12 @@ class FillUnfilledDataUseCase:
 
     async def execute(self) -> None:
         async with self.rock_uow:
-            async for rock_id in await self.rock_uow.rocks.iter_ids():
+            async for rock_id in self.rock_uow.rocks.iter_ids():
                 try:
                     await self._fill(rock_id)
                 except Exception as e:
                     logger.debug(f"Failed fill {rock_id=}: {e}")
+                await asyncio.sleep(0.2)
 
     async def _fill(self, rock_id: str):
         rock_data = (await self.rock_uow.rocks.get_by_id(UUID(rock_id))).model_dump()
