@@ -14,5 +14,4 @@ async def _fill_rocks_data():
 
 
 def fill_rocks_data():
-    loop = asyncio.get_running_loop()
-    loop.run_until_complete(_fill_rocks_data())
+    asyncio.run(_fill_rocks_data())
